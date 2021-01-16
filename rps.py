@@ -8,8 +8,7 @@ import threading
 def get_prefix(client, message):
     with open('prefixes.json', 'r') as f:
         prefixes = json.load(f)
-    if not message.guild:
-        return '#'
+
     if message.guild and  str(message.guild.id) in prefixes.keys():
         return prefixes[str(message.guild.id)]
     else: 
@@ -132,42 +131,21 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
         embed = discord.Embed(title = "Choose your move in 20 seconds", description = "`rock`, `paper` or `scissors`", color=discord.Colour.from_rgb(r=q, g=p, b=r))
         await ctx.author.send(embed=embed)
         await member.send(embed=embed)
-<<<<<<< HEAD
-
         try:
             choice = None 
             choice1 = None
-            check = False
-            check1 = False
-
-            ret = asyncio.gather (
-                client.wait_for('message',timeout=20,check=lambda message: message.author == member and message.channel == member.dm_channel),
-                client.wait_for('message',timeout=20,check= lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel),
-                return_exceptions = True 
-            )
-            
-            ret = [r if not isinstance(r, Exception) else None for r in ret]
-            msg, opponent = ret
-
-            while msg or opponent:
-                if msg:
-                    if check is False:
-=======
-        try:
-            choice = None 
-            choice1 = None
-            
             check=True
             check1=True
+
             opponent = await client.wait_for('message', check=lambda message: message.author == member and message.channel == member.dm_channel)
             print('opponent',opponent,type(opponent))
            
             msg = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
             print('msg',msg,type(msg))
+
             while msg  or opponent:
                 if msg:
                     if check:
->>>>>>> b13aae8f115d75923770f3dc93de357bfd61d9d9
                         if msg.content == rps_2[0] or msg.content == rps_2[3]:
                             choice = "rock :rock:"
                         elif msg.content == rps[1] or msg.content == rps_2[4]:
@@ -176,15 +154,10 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
                             choice = "scissors :scissors:"
 
                         await ctx.author.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
-<<<<<<< HEAD
-                        check = True
-                if opponent:
-                    if check1 is False:
-=======
                         check = False
+                        
                 if opponent:
                     if check1:
->>>>>>> b13aae8f115d75923770f3dc93de357bfd61d9d9
                         if opponent.content == rps_2[0] or opponent.content == rps_2[3]:
                             choice1 = "rock :rock:"
                         elif opponent.content == rps[1] or opponent.content == rps_2[4]:
@@ -194,7 +167,7 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
 
                         await member.dm_channel.send(f"You have chosen {choice1}\nNow back to <#{ctx.channel.id}>")
                         check1 = False
-                if not check and not check2:
+                if not check and not check1:
                      break
 
             lost = discord.Embed(title = f"{member.mention} Won !!", description = f"{member.mention} threw {choice1} and {ctx.author.mention} threw {choice}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
