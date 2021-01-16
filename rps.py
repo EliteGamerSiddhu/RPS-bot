@@ -137,7 +137,8 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
             check = False
             check1 = False
 
-            opponent = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
+            #problem is here
+            opponent = await client.wait_for('message', check=lambda message: message.author == member and message.channel == member.dm_channel)
             msg = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
 
             while msg is True or opponent is True:
