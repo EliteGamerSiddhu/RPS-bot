@@ -9,6 +9,9 @@ def get_prefix(client, message):
     with open('prefixes.json', 'r') as f:
         prefixes = json.load(f)
 
+    if not message.guild:
+        return '#'
+
     if message.guild and  str(message.guild.id) in prefixes.keys():
         return prefixes[str(message.guild.id)]
     else: 
@@ -30,6 +33,22 @@ def get_token():
         tokens = json.load(f)
 
     return tokens['token']
+
+async def get_msg(member :discord.Member,ctx : discord.Message):
+    try:
+        msg=await client.wait_for('message',timeout=20,check=lambda message: message.author == member and message.channel == member.dm_channel)
+
+        if msg.content == rps_2[0] or msg.content == rps_2[3]:
+            choice = "rock :rock:"
+        elif msg.content == rps[1] or msg.content == rps_2[4]:
+            choice = "paper :newspaper2:"
+        else:
+            choice = "scissors :scissors:"
+
+        await member.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
+        return msg
+    except asyncio.TimeoutError:
+        return asyncio.TimeoutError
 
 @client.event
 async def on_ready():
@@ -134,15 +153,14 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
         try:
             choice = None 
             choice1 = None
-            check=True
-            check1=True
 
-            opponent = await client.wait_for('message', check=lambda message: message.author == member and message.channel == member.dm_channel)
-            print('opponent',opponent,type(opponent))
+            loop = asyncio.get_event_loop()
+            opponent, msg = loop.run_until_complete(asyncio.gather(get_msg(member,ctx),get_msg(ctx.author,ctx)))
+            
+            #opponent = await client.wait_for('message', check=lambda message: message.author == member and message.channel == member.dm_channel)
            
-            msg = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
-            print('msg',msg,type(msg))
-
+            #msg = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
+            """
             while msg  or opponent:
                 if msg:
                     if check:
@@ -155,7 +173,7 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
 
                         await ctx.author.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
                         check = False
-                        
+
                 if opponent:
                     if check1:
                         if opponent.content == rps_2[0] or opponent.content == rps_2[3]:
@@ -169,6 +187,7 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
                         check1 = False
                 if not check and not check1:
                      break
+            """
 
             lost = discord.Embed(title = f"{member.mention} Won !!", description = f"{member.mention} threw {choice1} and {ctx.author.mention} threw {choice}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
             win = discord.Embed(title = f"{ctx.author.mention} Won !!", description = f"{member.mention} threw {choice1} and {ctx.author.mention} threw {choice}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
