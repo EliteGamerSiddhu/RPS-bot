@@ -130,6 +130,7 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
         r = random.randint(0, 255)
         embed = discord.Embed(title = "Choose your move in 20 seconds", description = "`rock`, `paper` or `scissors`", color=discord.Colour.from_rgb(r=q, g=p, b=r))
         await ctx.author.send(embed=embed)
+        await member.send(embed=embed)
 
         try:
             choice = None 
@@ -137,12 +138,17 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
             check = False
             check1 = False
 
-            #problem is here
-            opponent = await client.wait_for('message', check=lambda message: message.author == member and message.channel == member.dm_channel)
-            msg = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
+            ret = asyncio.gather (
+                client.wait_for('message',timeout=20,check=lambda message: message.author == member and message.channel == member.dm_channel),
+                client.wait_for('message',timeout=20,check= lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel),
+                return_exceptions = True 
+            )
+            
+            ret = [r if not isinstance(r, Exception) else None for r in ret]
+            msg, opponent = ret
 
-            while msg is True or opponent is True:
-                if msg is True:
+            while msg or opponent:
+                if msg:
                     if check is False:
                         if msg.content == rps_2[0] or msg.content == rps_2[3]:
                             choice = "rock :rock:"
@@ -153,7 +159,7 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
 
                         await ctx.author.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
                         check = True
-                if opponent is True:
+                if opponent:
                     if check1 is False:
                         if opponent.content == rps_2[0] or opponent.content == rps_2[3]:
                             choice = "rock :rock:"
