@@ -46,9 +46,12 @@ async def get_msg(member :discord.Member,ctx : discord.Message):
             choice = "scissors :scissors:"
 
         await member.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
+        print("msg taken")
         return msg
     except asyncio.TimeoutError:
-        return asyncio.TimeoutError
+        msg = "nothing"
+        print("message sent as nothing")
+        return msg
 
 @client.event
 async def on_ready():
@@ -150,86 +153,68 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
         embed = discord.Embed(title = "Choose your move in 20 seconds", description = "`rock`, `paper` or `scissors`", color=discord.Colour.from_rgb(r=q, g=p, b=r))
         await ctx.author.send(embed=embed)
         await member.send(embed=embed)
+
+        rock = "rock :rock:"
+        paper = "paper :newspaper2:"
+        scissors = "scissors :scissors:"
+
+        loop = asyncio.get_event_loop()
         try:
-            choice = None 
-            choice1 = None
-
-            loop = asyncio.get_event_loop()
             opponent, msg = loop.run_until_complete(asyncio.gather(get_msg(member,ctx),get_msg(ctx.author,ctx)))
-            
-            #opponent = await client.wait_for('message', check=lambda message: message.author == member and message.channel == member.dm_channel)
-           
-            #msg = await client.wait_for('message', check=lambda message: message.author == ctx.author and message.channel == ctx.author.dm_channel)
-            """
-            while msg  or opponent:
-                if msg:
-                    if check:
-                        if msg.content == rps_2[0] or msg.content == rps_2[3]:
-                            choice = "rock :rock:"
-                        elif msg.content == rps[1] or msg.content == rps_2[4]:
-                            choice = "paper :newspaper2:"
-                        else:
-                            choice = "scissors :scissors:"
+        finally:
+            loop.close()
 
-                        await ctx.author.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
-                        check = False
+        print("1")
 
-                if opponent:
-                    if check1:
-                        if opponent.content == rps_2[0] or opponent.content == rps_2[3]:
-                            choice1 = "rock :rock:"
-                        elif opponent.content == rps[1] or opponent.content == rps_2[4]:
-                            choice1 = "paper :newspaper2:"
-                        else:
-                            choice1 = "scissors :scissors:"
-
-                        await member.dm_channel.send(f"You have chosen {choice1}\nNow back to <#{ctx.channel.id}>")
-                        check1 = False
-                if not check and not check1:
-                     break
-            """
-
-            lost = discord.Embed(title = f"{member.mention} Won !!", description = f"{member.mention} threw {choice1} and {ctx.author.mention} threw {choice}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
-            win = discord.Embed(title = f"{ctx.author.mention} Won !!", description = f"{member.mention} threw {choice1} and {ctx.author.mention} threw {choice}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
-            draw = discord.Embed(title = "It's a draw.", description = f"{member.mention} threw {choice1} and {ctx.author.mention} threw {choice}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
+        msg_emoji = None
+        oppo_emoji = None
                         
-            if msg.content in rps_2 and opponent.content in rps_2:
-                if msg.content == rps_2[0] or msg.content == rps_2[3]:
-                    msg_emoji = ":rock:"
-                elif msg.content == rps[1] or msg.content == rps_2[4]:
-                    msg_emoji = ":newspaper2:"
-                else:
-                    msg_emoji = ":scissors:"
+        if msg.content in rps_2 and opponent.content in rps_2:
+            if msg.content == rps_2[0] or msg.content == rps_2[3]:
+                msg_emoji = rock
+            elif msg.content == rps[1] or msg.content == rps_2[4]:
+                msg_emoji = paper
+            else:
+                msg_emoji = scissors
 
-                if  opponent.content == rps_2[0] or opponent.content == rps_2[3]:
-                    oppo_emoji = ":rock:"
-                elif opponent.content == rps[1] or opponent.content == rps_2[4]:
-                    oppo_emoji = ":newspaper2:"
-                else:
-                    oppo_emoji = ":scissors:"
+            if  opponent.content == rps_2[0] or opponent.content == rps_2[3]:
+                oppo_emoji = rock
+            elif opponent.content == rps[1] or opponent.content == rps_2[4]:
+                oppo_emoji = paper
+            else:
+                oppo_emoji = scissors
+
+            lost = discord.Embed(title = f"{member.mention} Won !!", description = f"{member.mention} threw {oppo_emoji} and {ctx.author.mention} threw {msg_emoji}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
+            win = discord.Embed(title = f"{ctx.author.mention} Won !!", description = f"{member.mention} threw {oppo_emoji} and {ctx.author.mention} threw {msg_emoji}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
+            draw = discord.Embed(title = "It's a draw.", description = f"{member.mention} threw {oppo_emoji} and {ctx.author.mention} threw {msg_emoji}.", color = discord.Colour.from_rgb(r=q, g=p, b=r))
                 
-                if msg_emoji == oppo_emoji:
-                    await ctx.send(embed=draw)
-                else:
-                    if msg_emoji == ":rock:":
-                        if oppo_emoji == ":paper":
-                            await ctx.send(embed=lost)
-                        elif oppo_emoji == ":scissors:":
-                            await ctx.send(embed=win)
-                    elif msg_emoji == ":paper:":
-                        if oppo_emoji == ":rock:":
-                            await ctx.send(embed=win)
-                        elif oppo_emoji == ":scissors:":
-                            await ctx.send(embed=lost)
-                    elif msg_emoji == ":scissors:":
-                        if oppo_emoji == ":paper":
-                            await ctx.send(embed=lost)
-                        elif oppo_emoji == ":rock:":
-                            await ctx.send(embed=win)
+            if msg_emoji == oppo_emoji:
+                await ctx.send(embed=draw)
+            else:
+                if msg_emoji == rock:
+                    if oppo_emoji == paper:
+                        await ctx.send(embed=lost)
+                    elif oppo_emoji == scissors:
+                        await ctx.send(embed=win)
+                elif msg_emoji == paper:
+                    if oppo_emoji == rock:
+                        await ctx.send(embed=win)
+                    elif oppo_emoji == scissors:
+                        await ctx.send(embed=lost)
+                elif msg_emoji == scissors:
+                    if oppo_emoji == paper:
+                        await ctx.send(embed=lost)
+                    elif oppo_emoji == rock:
+                        await ctx.send(embed=win)
 
-        except asyncio.TimeoutError:
-            await sent.delete()
-            await ctx.send("Someone did not respond in time")
+        elif msg == "nothing" and opponent == "nothing":
+            await ctx.send("Both did not respond in time.")
+        elif opponent == "nothing":
+            await ctx.send(f"{member.mention} did not respond in time.")
+        elif msg == "nothing":
+            await ctx.send(f"{ctx.author.mention} did not respond in time")
+        else:
+            await ctx.send("Some error occured")
 
 @client.event
 async def on_command_error(ctx,error):
