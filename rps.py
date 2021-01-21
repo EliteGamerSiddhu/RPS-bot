@@ -34,7 +34,7 @@ def get_token():
 
     return tokens['token']
 
-async def get_msg(member :discord.Member,ctx : discord.Message):
+async def get_msg(member :discord.Member,ctx : discord.Message,trace="default"):
     try:
         msg=await client.wait_for('message',timeout=20,check=lambda message: message.author == member and message.channel == member.dm_channel)
 
@@ -46,11 +46,11 @@ async def get_msg(member :discord.Member,ctx : discord.Message):
             choice = "scissors :scissors:"
 
         await member.dm_channel.send(f"You have chosen {choice}\nNow back to <#{ctx.channel.id}>")
-        print("msg taken")
+        print("msg taken",trace)
         return msg
     except asyncio.TimeoutError:
         msg = "nothing"
-        print("message sent as nothing")
+        print("message sent as nothing",trace)
         return msg
 
 @client.event
@@ -157,14 +157,8 @@ async def rock_paper_scissors(ctx, member : discord.Member = None):
         rock = "rock :rock:"
         paper = "paper :newspaper2:"
         scissors = "scissors :scissors:"
-
-        loop = asyncio.get_event_loop()
-        try:
-            opponent, msg = loop.run_until_complete(asyncio.gather(get_msg(member,ctx),get_msg(ctx.author,ctx)))
-        finally:
-            loop.close()
-
-        print("1")
+        
+        opponent,msg=await asyncio.gather(get_msg(member,ctx,"member"),get_msg(ctx.author,ctx,"author"))
 
         msg_emoji = None
         oppo_emoji = None
